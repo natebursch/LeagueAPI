@@ -3,13 +3,15 @@
 
 import requests
 
+import json
+
 # Replace "YOUR_API_KEY" with your actual API key
 api_key = "RGAPI-ed3c4252-79fc-4c7a-8363-24f946549e6e"
 
 # Set up the base URL for API requests
 base_url = "https://na1.api.riotgames.com"
 
-s_name = "fearfracture"
+s_name = "Sayber"
 
 region = "AMERICAS"
 match_v5_base_URL = f"https://{region}.api.riotgames.com"
@@ -95,17 +97,50 @@ def GetPlayerNames(participants):
 
 
 
+try:
+    with open("players.json","r") as f:
+        player_hash = json.load(f)
+
+except:
+    player_hash = {}
+
+print(type(player_hash))
+
+# player_hash["Fart"]=123816238612
+# print(player_hash["Fart"])
+
 r_matches = GetRecentMatches(s_name)
-# create a hash of millions of user names
-players = {}
 
-for i in range(r_matches):
-    data = GetMatchDetails(r_matches[0])
-    #print(data)
+# data = GetMatchDetails(r_matches[1])
+
+# players = GetPlayerNames(data["metadata"]['participants'])
+
+# for n in range(len(players)):
+#     if players[n][0] not in players:
+#         player_hash[players[n][0]] = players[n][1]
+
+# print(type(player_hash))
+
+# with open("players.json", "w") as f:
+#     json.dump(player_hash,f)
+
+##################################################
+#create a hash of millions of user names
+for i in range(len(r_matches)):
+    data = GetMatchDetails(r_matches[i])
+
     players = GetPlayerNames(data["metadata"]['participants'])
+    counter = 0
+    for n in range(len(players)):
+        if players[n][0] not in player_hash:
+            counter += 1
+            player_hash[players[n][0]] = players[n][1]
+    print(f"Added {counter} players to mothership")
 
-    for n in range(players):
-        if player[0] in 
+
+
+with open("players.json", "w") as f:
+    json.dump(player_hash,f)
         
 
 
