@@ -105,7 +105,7 @@ try:
 except:
     player_hash = {}
 
-print(type(player_hash))
+# print(type(player_hash))
 
 # player_hash["Fart"]=123816238612
 # print(player_hash["Fart"])
@@ -127,23 +127,68 @@ r_matches = GetRecentMatches(s_name)
 
 ##################################################
 #create a hash of millions of user names
-for i in range(len(r_matches)):
-    data = GetMatchDetails(r_matches[i])
+def AddToMotherList(name):
+    try:
+        with open("players.json","r") as f:
+            player_hash = json.load(f)
 
-    players = GetPlayerNames(data["metadata"]['participants'])
-    counter = 0
-    for n in range(len(players)):
-        if players[n][0] not in player_hash:
-            counter += 1
-            player_hash[players[n][0]] = players[n][1]
-    print(f"Added {counter} players to mothership")
+    except:
+        player_hash = {}
+
+    r_matches = GetRecentMatches(name)
+
+    # for i in range(1):
+    for i in range(len(r_matches)):
+        data = GetMatchDetails(r_matches[i])
+
+        players = GetPlayerNames(data["metadata"]['participants'])
+        counter = 0
+        for n in range(len(players)):
+            if players[n][0] not in player_hash:
+                counter += 1
+                player_hash[players[n][0]] = players[n][1]
+        print(f"{i}: Added {counter} players to mothership")
 
 
 
-with open("players.json", "w") as f:
-    json.dump(player_hash,f)
-        
+    with open("players.json", "w") as f:
+        json.dump(player_hash,f)
+    
+    #return a random name to use next
+    return players[0][0] if players[0][0] != name else players[1][0]
 
+
+
+
+import time
+import threading
+
+def input_with_timeout(prompt, timeout):
+    print(prompt)
+    timer = threading.Timer(timeout, lambda: print("\nTimeout!"))
+    timer.start()
+    user_input = input()
+    timer.cancel()
+    return user_input
+
+run = True
+counter = 0
+name = "l Play Yasuo"
+while run:
+    print(f"Run: {counter}\tUsing Name: {name}")
+    name = AddToMotherList(name)
+
+    # Prompt the user for input with a timeout of 120 seconds  gets around the request limit on riot
+    # user_input = input_with_timeout("Enter 'q' to quit: ", 5)
+    # if user_input == 'q':
+    #     run = False
+    counter += 1
+    # Pause for 2 minutes
+    time.sleep(120)
+
+# print(f"Run: {counter}\tUsing Name: {name}")
+# name = AddToMotherList(name)
+# print(name)
 
 
 
