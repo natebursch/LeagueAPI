@@ -137,8 +137,8 @@ def AddToMotherList(name):
 
     r_matches = GetRecentMatches(name)
 
-    # for i in range(1):
-    for i in range(len(r_matches)):
+    for i in range(10):
+    # for i in range(len(r_matches)):
         data = GetMatchDetails(r_matches[i])
 
         players = GetPlayerNames(data["metadata"]['participants'])
@@ -173,7 +173,7 @@ def input_with_timeout(prompt, timeout):
 
 run = True
 counter = 0
-name = "l Play Yasuo"
+name = "Mac3"
 while run:
     print(f"Run: {counter}\tUsing Name: {name}")
     name = AddToMotherList(name)
