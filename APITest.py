@@ -1,14 +1,16 @@
 # The First Test for League API
 # Nate Bursch
+# endpoints
+# https://developer.riotgames.com/apis#match-v5/GET_getMatch
 
 import requests
 
 import json
 
-# Replace "YOUR_API_KEY" with your actual API key
+# daily api key - get a new one at https://developer.riotgames.com/
 api_key = "RGAPI-ed3c4252-79fc-4c7a-8363-24f946549e6e"
 
-# Set up the base URL for API requests
+#a url
 base_url = "https://na1.api.riotgames.com"
 
 s_name = "kittykat2532"
@@ -19,7 +21,6 @@ match_v5_base_URL = f"https://{region}.api.riotgames.com"
 headers_api = {"X-Riot-Token": api_key}
 
 def GetSummonerPUUID(s_name,debug=False):
-    # Set up the endpoint for retrieving summoner information
     try:
         get_name = f"/lol/summoner/v4/summoners/by-name/{s_name}"
 
