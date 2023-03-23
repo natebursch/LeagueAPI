@@ -4,9 +4,9 @@
 # https://developer.riotgames.com/apis#match-v5/GET_getMatch
 
 import requests
-
 import json
-
+import time
+import threading
 # daily api key - get a new one at https://developer.riotgames.com/
 api_key = "RGAPI-ed3c4252-79fc-4c7a-8363-24f946549e6e"
 
@@ -52,7 +52,10 @@ def GetSummonerName(puuid, debug=False):
 def GetRecentMatches(s_name,debug=False):
     
     #get puuid of summoner name
-    puuid = GetSummonerPUUID(s_name)
+    if len(s_name) < 78:
+        puuid = GetSummonerPUUID(s_name)
+    else: puuid = s_name
+
     region = 'AMERICAS'
 
     #endpoint of 
@@ -98,19 +101,19 @@ def GetPlayerNames(participants,debug=False):
 
 
 
-try:
-    with open("players.json","r") as f:
-        player_hash = json.load(f)
+# try:
+#     with open("players.json","r") as f:
+#         player_hash = json.load(f)
 
-except:
-    player_hash = {}
+# except:
+#     player_hash = {}
 
-# print(type(player_hash))
+# # print(type(player_hash))
 
-# player_hash["Fart"]=123816238612
-# print(player_hash["Fart"])
+# # player_hash["Fart"]=123816238612
+# # print(player_hash["Fart"])
 
-r_matches = GetRecentMatches(s_name)
+# r_matches = GetRecentMatches(s_name)
 
 # data = GetMatchDetails(r_matches[1])
 
@@ -159,36 +162,95 @@ def AddToMotherList(name):
 
 
 
+def GetPlayerNames():
 
-import time
-import threading
+    def input_with_timeout(prompt, timeout):
+        print(prompt)
+        timer = threading.Timer(timeout, lambda: print("\nTimeout!"))
+        timer.start()
+        user_input = input()
+        timer.cancel()
+        return user_input
 
-def input_with_timeout(prompt, timeout):
-    print(prompt)
-    timer = threading.Timer(timeout, lambda: print("\nTimeout!"))
-    timer.start()
-    user_input = input()
-    timer.cancel()
-    return user_input
+    run = True
+    counter = 0
+    name = "Mac3"
+    while run:
+        print(f"Run: {counter}\tUsing Name: {name}")
+        name = AddToMotherList(name)
 
-run = True
-counter = 0
-name = "Mac3"
-while run:
-    print(f"Run: {counter}\tUsing Name: {name}")
-    name = AddToMotherList(name)
+        # Prompt the user for input with a timeout of 120 seconds  gets around the request limit on riot
+        # user_input = input_with_timeout("Enter 'q' to quit: ", 5)
+        # if user_input == 'q':
+        #     run = False
+        counter += 1
+        # Pause for 2 minutes
+        time.sleep(120)
 
-    # Prompt the user for input with a timeout of 120 seconds  gets around the request limit on riot
-    # user_input = input_with_timeout("Enter 'q' to quit: ", 5)
-    # if user_input == 'q':
-    #     run = False
-    counter += 1
-    # Pause for 2 minutes
-    time.sleep(120)
+    # print(f"Run: {counter}\tUsing Name: {name}")
+    # name = AddToMotherList(name)
+    # print(name)
 
-# print(f"Run: {counter}\tUsing Name: {name}")
-# name = AddToMotherList(name)
-# print(name)
+#27000 games
+def GetMatchIDs():
+    with open("players.json","r") as f:
+        player_hash = json.load(f)
 
+    count = 0
+    total_matches = 0
+    for player,puuid in player_hash.items():
+        try:
+            with open("matchIDS.json","r") as p:
+                matchids_hash = json.load(p)
+        except:
+            matchids_hash = {}
+
+        print(f"Getting match details from {player} : {puuid}")
+        matches = GetRecentMatches(puuid,False)
+        count+=1
+        for m in matches:
+            if m not in matchids_hash:
+                matchids_hash[m] = m
+                total_matches+=1
+            
+
+        with open("matchIDS.json", "w") as p:
+            json.dump(matchids_hash,p)
+
+        if count % 200 == 0:
+            print("-"*100,f"\nWait for two minutes\nTotal Matches Found: {total_matches}")
+            time.sleep(120)
+
+def SaveJSON(data,name):
+    with open(name,"w") as f:
+        json.dump(data,f)
+
+def GetJSONdata(name):
+    with open(name,"r") as f:
+        return json.load(f)
+
+# data = GetMatchDetails("NA1_4599674019")
+# SaveJSON(data,"matchdata.json")
+
+import pandas as pd
+
+# load JSON data
+with open('matchdata.json') as f:
+    data = json.load(f)
+
+# convert JSON to pandas dataframe
+particpants = pd.json_normalize(data['info']["participants"])
+base_info = pd.json_normalize(data['info'])
+
+for index, row in particpants.iterrows():
+    row = pd.concat([row,base_info],axis =1)
+    print(row)
+
+print(particpants.iloc[0])
+
+
+    
+# save dataframe to CSV
+particpants.to_csv('data.csv', index=False)
 
 
