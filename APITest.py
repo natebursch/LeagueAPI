@@ -11,14 +11,14 @@ api_key = "RGAPI-ed3c4252-79fc-4c7a-8363-24f946549e6e"
 # Set up the base URL for API requests
 base_url = "https://na1.api.riotgames.com"
 
-s_name = "Sayber"
+s_name = "kittykat2532"
 
 region = "AMERICAS"
 match_v5_base_URL = f"https://{region}.api.riotgames.com"
 
 headers_api = {"X-Riot-Token": api_key}
 
-def GetSummonerPUUID(s_name):
+def GetSummonerPUUID(s_name,debug=False):
     # Set up the endpoint for retrieving summoner information
     try:
         get_name = f"/lol/summoner/v4/summoners/by-name/{s_name}"
@@ -34,21 +34,21 @@ def GetSummonerPUUID(s_name):
 
     return puuid
 
-def GetSummonerName(puuid):
+def GetSummonerName(puuid, debug=False):
     puuid_endpoint = f"/lol/summoner/v4/summoners/by-puuid/{puuid}"
 
-    print(f"Attempting to get info of player: {puuid}")
+    if debug: print(f"Attempting to get info of player: {puuid}")
     response = requests.get(f"{base_url}{puuid_endpoint}", headers=headers_api)
 
     if response.status_code == 200:
         summoner_info = response.json()
         summoner_name = summoner_info["name"]
-        print(f"Retrived Summoner name: {summoner_name}")
+        if debug: print(f"Retrived Summoner name: {summoner_name}")
         return summoner_name
     else:
-        print("Error getting summoner info")
+        if debug: print("Error getting summoner info")
 
-def GetRecentMatches(s_name):
+def GetRecentMatches(s_name,debug=False):
     
     #get puuid of summoner name
     puuid = GetSummonerPUUID(s_name)
@@ -57,34 +57,34 @@ def GetRecentMatches(s_name):
     #endpoint of 
     recent_matches_url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
 
-    print("Attemping to get recent matches")
+    if debug: print("Attemping to get recent matches")
     response = requests.get(recent_matches_url, headers={"X-Riot-Token": api_key})
 
     if response.status_code == 200:
         recent_matches = response.json()
         #retrieves last 20 match IDS
-        print(f"Retrieved Last 20 Matches for {s_name} : {puuid}")
+        if debug: print(f"Retrieved Last 20 Matches for {s_name} : {puuid}")
         return recent_matches
     
     else:
-        print("Error getting recent matches")
+        if debug: print("Error getting recent matches")
         return [0]
 
-def GetMatchDetails(match_id):
+def GetMatchDetails(match_id,debug=False):
     match_info_url = f"/lol/match/v5/matches/{match_id}"
 
-    print(f"Attempting to get match info for {match_id}")
+    if debug: print(f"Attempting to get match info for {match_id}")
     response = requests.get(f"{match_v5_base_URL}{match_info_url}", headers=headers_api )
 
     if response.status_code == 200:
-        print(f"Retrieved Match: {match_id}")
+        if debug: print(f"Retrieved Match: {match_id}")
         data = response.json()
         return data
     else:
-        print("Error getting match data")
+        if debug: print("Error getting match data")
         return [0]
 
-def GetPlayerNames(participants):
+def GetPlayerNames(participants,debug=False):
     players = []
     #go through the list of participants and get the names of each along with the puuid
     for player in participants:
