@@ -7,6 +7,8 @@ import requests
 import json
 import time
 import threading
+
+import pandas as pd
 # daily api key - get a new one at https://developer.riotgames.com/
 api_key = "RGAPI-ed3c4252-79fc-4c7a-8363-24f946549e6e"
 
@@ -225,32 +227,72 @@ def SaveJSON(data,name):
     with open(name,"w") as f:
         json.dump(data,f)
 
-def GetJSONdata(name):
-    with open(name,"r") as f:
-        return json.load(f)
+1
 
-# data = GetMatchDetails("NA1_4599674019")
-# SaveJSON(data,"matchdata.json")
-
-import pandas as pd
-
-# load JSON data
-with open('matchdata.json') as f:
-    data = json.load(f)
-
-# convert JSON to pandas dataframe
-particpants = pd.json_normalize(data['info']["participants"])
-base_info = pd.json_normalize(data['info'])
-
-for index, row in particpants.iterrows():
-    row = pd.concat([row,base_info],axis =1)
-    print(row)
-
-print(particpants.iloc[0])
+def GetSingleMatchData(matchID):    
+    return GetMatchDetails(matchID)
 
 
+def GetAllMatchData(match_ids_filename, match_data_filename):
+    # number of times a request is made
+    request_count = 0
+    count = 0
+
+    match_ids = GetJSONdata(match_ids_filename)
     
-# save dataframe to CSV
-particpants.to_csv('data.csv', index=False)
+    # go through each key value pair and request the data
+    for key, value in match_ids.items():
+        try:
+            print(f"{request_count}: Getting data from {key}")
+            # get match data of the key - which is the match id
+            if (request_count % 100 == 0) and (request_count > 0): time.sleep(120)
+            data = GetSingleMatchData(key)
+           
+            request_count +=1
+
+            # convert JSON to pandas dataframe
+            particpants = pd.json_normalize(data['info']["participants"])
+            base_info = pd.json_normalize(data['info']).drop("participants",axis=1)
+
+            # duplicating it to match up with the particpants info
+            base_info = pd.concat([base_info]*len(particpants),ignore_index=True)
+
+            # ten rows of new info
+            result = pd.concat([base_info, particpants], axis=1)
+            
+            # append to motherload
+            with open(match_data_filename, 'a') as m:
+                result.to_csv(m,header=False,index=False)
+        except KeyboardInterrupt:
+            print("Keyboard exit caught - exiting program")
+            break
+        except:
+            print(f"ERROR - getting data from {key}")
+        
+        count+= 1
+        
 
 
+
+def CreateFirst():
+    # load JSON data
+    with open('matchdata.json') as f:
+        data = json.load(f)
+
+    # convert JSON to pandas dataframe
+    particpants = pd.json_normalize(data['info']["participants"])
+    base_info = pd.json_normalize(data['info']).drop("participants",axis=1)
+
+    # duplicating it to match up with the particpants info
+    base_info = pd.concat([base_info]*len(particpants),ignore_index=True)
+
+    # ten rows of info
+    result = pd.concat([base_info, particpants], axis=1)
+        
+    # save dataframe to CSV
+    result.to_csv('data.csv', index=False)
+
+
+
+CreateFirst()
+GetAllMatchData("matchIDS.json",'data.csv')
